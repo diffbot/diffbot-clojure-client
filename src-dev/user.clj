@@ -4,4 +4,4 @@
             [clojure.string :as str]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [midje.repl :refer [load-facts check-facts]]
-            [diffbot.core :refer [article]]))
+            [diffbot.core :refer [article frontpage product image]]))
