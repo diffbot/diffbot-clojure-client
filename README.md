@@ -101,7 +101,10 @@ The available `fields` deponds on the API that is being called, for full referen
 
 
 ```clojure
-user> (article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/" :timeout 5000 :fields ["meta", "querystring", "images(*)"])
+user> (article token
+               "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/"
+               :timeout 5000
+               :fields ["meta", "querystring", "images(*)"])
 ```
 
 ### clj-http
@@ -111,7 +114,9 @@ This library delegates to [clj-http](https://github.com/dakrone/clj-http) to mak
 As an example, to include the entire response in exception cases forward through the following:
 
 ```clojure
-user> (article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/" :req {:throw-entire-message? true})
+user> (article token
+               "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/"
+               :req {:throw-entire-message? true})
 ```
 
 ### Exception handling
@@ -133,7 +138,9 @@ user> (article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-r
 Alternatively, on exceptional cases the response body can be returned directly by instructing clj-http not to throw exceptions.
 
 ```clojure
-(article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/" :req {:throw-exceptions false})
+(article token
+         "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/"
+         :req {:throw-exceptions false})
 ```
 
 ## License
