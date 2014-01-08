@@ -18,15 +18,6 @@
     url))
 
 (defn build-request-url [call-type token url & {:keys [api-url api-version fields timeout callback]}]
-  "The Diffbot API is fairly structured with two mandatory parameters and three optional. Mandatory:
-  * token - to access the API
-  * url - to parse
-  Optional:
-  * callback - for JSONP requests
-  * timeout - in ms, default is no timeout
-  * fields - a list of fields to be returned in the response.
-
-  The accepted fields depends on the choice of API in `call-type`."
   (-> (format "http://%s/%s/%s?token=%s&url=%s"
               (or api-url "api.diffbot.com")
               (or api-version "v2")
@@ -37,25 +28,34 @@
       (add-time-out timeout)
       (add-callback callback)))
 
-(defn ^:private call-api [call-type token url & opts]
-  (-> (apply (partial build-request-url call-type token url) opts)
-      (client/get (merge {:as :json}
-                         (:req (apply hash-map opts))))
-      :body))
+(defn spy [x] (do (println x) x))
 
-(def article
-  (partial call-api "article"))
+(defmacro defapi [name documentation]
+  (let [stock-doc "The Diffbot API is fairly structured with two mandatory parameters and three optional. Mandatory:
+  * token - to access the API
+  * url - to parse
+  Optional:
+  * callback - for JSONP requests
+  * timeout - in ms, default is no timeout
+  * fields - a list of fields to be returned in the response."]
+    `(defn ~name ~(str documentation \newline \newline stock-doc) [token# url# & opts#]
+       (-> (apply (partial build-request-url (str '~name) token# url#) opts#)
+           (client/get (merge {:as :json}
+                              (:req (apply hash-map opts#))))
+           :body))))
 
-(def frontpage
-  ; The documention for frontpage shows a differant url (diffbot.com/api instead
-  ; of api.diffbot.com/v2) and returning DML (XML) instead of JSON. However,
-  ; this does work with the v2 url and retuns valid JSON.
-  ; TODO confirm whether v2 JSON suceeds the DML response
-  (partial call-api "frontpage"))
+(defapi article
+  "Extract clean article text from news article, blog post and similar text-heavy web pages.
+The list of available fields can be found at http://www.diffbot.com/products/automatic/article/")
 
-(def product
-  (partial call-api "product"))
+(defapi frontpage
+  "Take in a multifaceted “homepage” and returns individual page elements.
+The list of available fields can be found at http://www.diffbot.com/products/automatic/frontpage/")
 
-(def image
-  "doc"
-  (partial call-api "image"))
+(defapi product
+  "Analyze a shopping or e-commerce product page and returns information on the product.
+The list of available fields can be found at http://www.diffbot.com/products/automatic/product/")
+
+(defapi image
+  "Analyze a web page and returns its primary image(s).
+The list of available fields can be found at http://www.diffbot.com/products/automatic/image/")
