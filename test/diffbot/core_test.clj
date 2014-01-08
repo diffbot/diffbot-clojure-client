@@ -1,10 +1,12 @@
 (ns diffbot.core-test
+  "All tests set the api-url to localhost to avoid calling spamming the diffbot servers."
   (import [java.net URLEncoder])
   (:require [midje.sweet :refer :all]
             [clj-http.fake :refer :all]
             [diffbot.core :refer :all]
             [clojure.string :as str]
-            [diffbot.stock :refer [article-response frontpage-response image-response product-response]]))
+            [diffbot.stock :refer [article-response frontpage-response image-response product-response]]
+            [slingshot.slingshot :refer [try+]]))
 
 (def ^:private token "token")
 
@@ -54,3 +56,24 @@
            analysis => map?
            (every? (comp not nil?)
                    (map analysis [:leafPage :date_created :type :products :url])) => true)))
+
+
+
+(facts "Unsuccessful API calls throw slingshots"
+      (with-fake-routes
+         (build-matchers ["article" "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/"] {:status 500 :headers {"bla" "bla2"} :body "error"})
+
+         (try+
+           (article token
+                                 "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/"
+                                 :api-url "localhost")
+           (catch [:status 500] e
+             (:body e) => "error"
+             (:headers e) => {"bla" "bla2"})))
+
+
+
+      (article token "without-a-valid-matcher" :api-url "localhost")
+      => (throws java.net.ConnectException)
+
+)

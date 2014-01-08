@@ -40,7 +40,7 @@
 (defn ^:private call-api [call-type token url & opts]
   (-> (apply (partial build-request-url call-type token url) opts)
       (client/get (merge {:as :json}
-                         (:req opts)))
+                         (:req (apply hash-map opts))))
       :body))
 
 (def article
