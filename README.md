@@ -10,9 +10,9 @@ Coming soon
 
 ## Usage
 
-Diffbot has four API calls that can be accessed by functions in the `diffbot.core` namespace, these are `article`, `frontpage`, `product` and `image`.
+Diffbot has four API calls that can be accessed by functions in the `diffbot.core` namespace, these are `article`, `frontpage`, `product` and `image` and correspond to the identically name Diffbot APIs.
 
-Require it in the REPL:
+Require the functions in the REPL:
 
 ```clojure
 user> (require '[diffbot.core :refer [article frontpage product image]])
@@ -25,7 +25,7 @@ Require in your namespace
     (:require [diffbot.core :refer [article frontpage product image]]))
 ```
 
-All function calls require a Diffbot API token (sign up [here](http://www.diffbot.com/pricing) to get one) and the url you want to parse. The Diffbot responses are parsed and returned as Clojure maps.
+All function calls require a Diffbot API token ([sign up](http://www.diffbot.com/pricing) to get one) and the url you want to parse. The Diffbot responses are parsed and returned as Clojure maps.
 
 An example article response, pretty printed for readability:
 
@@ -77,8 +77,7 @@ ther product IDs.\nEven cooler: pair the Product API with Crawlbot , our intelli
   :other 0.03714285714285714,
   :environment 0.04380901027166066,
   :politics 0.03619047619047619,
-  :business_finance 0.00857142857142857
-,
+  :business_finance 0.00857142857142857,
   :socialissues 0.06428571428571428,
   :labor 0.061428571428571416,
   :humaninterest 0.059285714285714275,
@@ -88,6 +87,53 @@ ther product IDs.\nEven cooler: pair the Product API with Crawlbot , our intelli
   :weather 0.014285714285714284,
   :hospitality_recreation 0.03857142857142856},
  :type "article"}
+```
+
+### Optional parameters
+
+There are three optional parameters that can be passed as keyword arguments
+
+* `timeout` Set a timeout in ms, the default is no timeout
+* `callback` A callback function for jsonp requests.
+* `fields` A list of fields that should be returned in the response.
+
+The available `fields` deponds on the API that is being called, for full reference see the Diffbot API documentation for [article](http://www.diffbot.com/products/automatic/article/), [frontpage](http://www.diffbot.com/products/automatic/frontpage/), [product](http://www.diffbot.com/products/automatic/product/) and [image](http://www.diffbot.com/products/automatic/image/).
+
+
+```clojure
+user> (article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/" :timeout 5000 :fields ["meta", "querystring", "images(*)"])
+```
+
+### clj-http
+
+This library delegates to [clj-http](https://github.com/dakrone/clj-http) to make http requests, configuration can be passed directly through using a `:req` keyword argument.
+
+As an example, to include the entire response in exception cases forward through the following:
+
+```clojure
+user> (article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/" :req {:throw-entire-message? true})
+```
+
+### Exception handling
+
+`clj-http` throws [Slingshot](https://github.com/scgilardi/slingshot) stones on exception cases, these can be caught and matched against.
+
+```clojure
+(try+
+    (article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/")
+    (catch [:status 500] e
+        ;handle 500
+    )
+    (catch [:status 401]
+        ; handle auth error
+    )
+)
+```
+
+Alternatively, on exceptional cases the response body can be returned directly by instructing clj-http not to throw exceptions.
+
+```clojure
+(article token "http://blog.diffbot.com/diffbots-new-product-api-teaches-robots-to-shop-online/" :req {:throw-exceptions false})
 ```
 
 ## License
