@@ -4,9 +4,7 @@ A Clojure library for working with the [Diffbot](http://www/diffbot.com) [API v2
 
 ## Installation
 
-~~Add `[com.diffbot/diffbot "0.1.0"]` to your Leiningen project `:dependencies`.~~
-
-Coming soon
+Add `[com.diffbot/diffbot "0.1.0"]` to your Leiningen project `:dependencies`.
 
 ## Usage
 
