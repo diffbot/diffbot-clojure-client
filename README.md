@@ -111,7 +111,9 @@ user> (article token
 To analyze urls that are not publicly available, the content can be specified explicitly using the optional `:content` keyword argument.
 
 ```clojure
-user> (article token "http://www.diffbot.com/our-apis/article" :content "Now is the time for all good robots to come to the aid of their-- oh never mind, run!")
+user> (article token
+               "http://www.diffbot.com/our-apis/article"
+               :content "Now is the time for all good robots to come to the aid of their-- oh never mind, run!")
 {:author "", :text "Now is the time for all good robots to come to the aid of their-- oh never mind, run!", :title "Now is the time for all good robots to come to the aid of their-- oh never mind, run!", :html "<div><body>Now is the time for all good robots to come to the aid of their-- oh never mind, run!\n</body></div>", :type "article", :url "http://www.diffbot.com/our-apis/article"}
 ```
 
