@@ -29,7 +29,6 @@
       (add-callback callback)))
 
 (defn call-api [url req content]
-  (println url)
   (if content
     (client/post url (merge {:as :json
                              :body content
