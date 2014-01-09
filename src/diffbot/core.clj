@@ -28,7 +28,15 @@
       (add-time-out timeout)
       (add-callback callback)))
 
-(defn spy [x] (do (println x) x))
+(defn call-api [url req content]
+  (println url)
+  (if content
+    (client/post url (merge {:as :json
+                             :body content
+                             :content-type :html}
+                            req))
+    (client/get url (merge {:as :json}
+                           req))))
 
 (defmacro defapi [name documentation]
   (let [stock-doc "The Diffbot API is fairly structured with two mandatory parameters and three optional. Mandatory:
@@ -39,10 +47,10 @@
   * timeout - in ms, default is no timeout
   * fields - a list of fields to be returned in the response."]
     `(defn ~name ~(str documentation \newline \newline stock-doc) [token# url# & opts#]
-       (-> (apply (partial build-request-url (str '~name) token# url#) opts#)
-           (client/get (merge {:as :json}
-                              (:req (apply hash-map opts#))))
-           :body))))
+       (let [opts-map# (apply hash-map opts#)]
+         (-> (apply (partial build-request-url (str '~name) token# url#) opts#)
+             (call-api (:req opts-map#) (:content opts-map#))
+             :body)))))
 
 (defapi article
   "Extract clean article text from news article, blog post and similar text-heavy web pages.
