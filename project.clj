@@ -1,4 +1,4 @@
-(defproject diffbot/diffbot "0.1.0-SNAPSHOT"
+(defproject diffbot/diffbot "0.1.0"
   :description "Clojure interface to the Diffbot API"
   :url "http://www.diffbot.com"
   :license {:name "Eclipse Public License"
