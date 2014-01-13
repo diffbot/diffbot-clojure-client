@@ -18,12 +18,12 @@
     (str url "&callback=" callback)
     url))
 
-(defn add-api-url [url api-url-type]
+(defn ^:private add-api-url [url api-url-type]
   (if api-url-type
     (str url "&apiUrl=" api-url-type)
     url))
 
-(defn build-api-url [call-type {:keys [api-url api-version fields timeout callback]}]
+(defn ^:private build-api-url [call-type {:keys [api-url api-version fields timeout callback]}]
   (when call-type
     (-> (format "http://%s/%s/%s"
                 (or api-url "api.diffbot.com")
@@ -34,12 +34,12 @@
         (add-callback callback)
         (URLEncoder/encode))))
 
-(defn to-api-key [k]
+(defn ^:private to-api-key [k]
   (-> (name k)
       (clojure.string/replace #"-(\w)"
                               #(clojure.string/upper-case (second %1)))))
 
-(defn add-args [url args]
+(defn ^:private add-args [url args]
   (let [q-params (for [[k v] args
                        :when k
                        :when v]
@@ -49,14 +49,14 @@
                       (str (to-api-key k) "=" (clojure.string/join "||" v))))]
     (str url "&" (clojure.string/join "&" q-params))))
 
-(defn add-urls [url urls]
+(defn ^:private add-urls [url urls]
   (if urls
     (->> (clojure.string/join " " urls)
          URLEncoder/encode
          (str url "&seeds="))
     url))
 
-(defn build-crawl-url [call-type urls token & {:keys [api-url api-version analyze-opts] :as opts}]
+(defn ^:private build-crawl-url [call-type urls token & {:keys [api-url api-version analyze-opts] :as opts}]
   (-> (format "http://%s/%s/crawl?token=%s"
               (or api-url "api.diffbot.com")
               (or api-version "v2")
@@ -66,9 +66,8 @@
       (add-args (dissoc opts :req :api-url :api-version :analyze-opts))))
 
 (defn make-crawl [name crawl-type urls token & crawl-opts]
-  (clojure.pprint/pprint crawl-opts)
   (let [crawl-url (apply build-crawl-url crawl-type urls token :name name crawl-opts)
-        req nil]
+        req (:req crawl-opts)]
     (-> (client/get crawl-url (merge {:as :json}
                                      req))
         :body)))
@@ -96,8 +95,8 @@
                       name
                       type)))
 
-(defn crawl-data [name token]
+(defn get-crawl-data [name token]
   (read-data "data.json" name token))
 
-(defn crawl-urls [name token]
+(defn get-crawl-urls [name token]
   (read-data "urls.csv" name token))

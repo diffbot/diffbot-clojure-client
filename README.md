@@ -8,6 +8,10 @@ Add `[com.diffbot/diffbot "0.1.0"]` to your Leiningen project `:dependencies`.
 
 ## Usage
 
+All function calls require a Diffbot API token ([sign up](http://www.diffbot.com/pricing) to get one) and the url you want to parse. The Diffbot responses are parsed and returned as Clojure maps.
+
+### Analyze
+
 Diffbot has four API calls that can be accessed by functions in the `diffbot.core` namespace, these are `article`, `frontpage`, `product` and `image` and correspond to the identically name Diffbot APIs.
 
 Require the functions in the REPL:
@@ -22,8 +26,6 @@ Require in your namespace
 (ns app.core
     (:require [diffbot.core :refer [article frontpage product image]]))
 ```
-
-All function calls require a Diffbot API token ([sign up](http://www.diffbot.com/pricing) to get one) and the url you want to parse. The Diffbot responses are parsed and returned as Clojure maps.
 
 An example article response, pretty printed for readability:
 
@@ -87,7 +89,7 @@ ther product IDs.\nEven cooler: pair the Product API with Crawlbot , our intelli
  :type "article"}
 ```
 
-### Optional parameters
+#### Optional parameters
 
 There are three optional parameters that can be passed as keyword arguments
 
@@ -106,7 +108,7 @@ user> (article token
 ```
 
 
-### Analyzing content behind a firewall
+#### Analyzing content behind a firewall
 
 To analyze urls that are not publicly available, the content can be specified explicitly using the optional `:content` keyword argument.
 
@@ -115,6 +117,159 @@ user> (article token
                "http://www.diffbot.com/our-apis/article"
                :content "Now is the time for all good robots to come to the aid of their-- oh never mind, run!")
 {:author "", :text "Now is the time for all good robots to come to the aid of their-- oh never mind, run!", :title "Now is the time for all good robots to come to the aid of their-- oh never mind, run!", :html "<div><body>Now is the time for all good robots to come to the aid of their-- oh never mind, run!\n</body></div>", :type "article", :url "http://www.diffbot.com/our-apis/article"}
+```
+
+### Crawlbot API
+
+The Diffbot (Crawlbot) allows jobs to be set up and triggered for crawling a complete website. The Crawlbot functionality is provided in the `diffbot.crawlbot` namespace.
+
+Require the functions in the REPL:
+
+```clojure
+user> (require '[diffbot.crawlbot :refer [make-crawl get-crawl pause resume restart delete get-crawl get-crawl-data get-crawl-urls]])
+```
+
+Require in your namespace
+
+```clojure
+(ns app.core
+    (:require [diffbot.crawlbot :refer [make-crawl get-crawl pause resume restart delete get-crawl get-crawl-data get-crawl-urls]]))
+```
+
+#### Setup a crawl
+
+Create a new crawl with `make-crawl`, the function allows you to give the crawl a name, the name acts as an ID, so keep hold of it, it will be needed for further operations.
+
+The other arguments are the crawl type, a list of urls to crawl and your API token.
+
+```clojure
+user> (pprint (diffbot.crawlbot/make-crawl "crawlName"  "article" ["http://google.com"] token))
+{:response "Successfully added urls for spidering.",
+ :jobs
+ [{:maxRounds -1,
+   :pageProcessAttempts 0,
+   :downloadJson
+   "http://api.diffbot.com/v2/crawl/download/[tokenredacted]-crawlName_data.json",
+   :urlProcessRegEx "",
+   :pageProcessPattern "",
+   :urlsHarvested 0,
+   :pageCrawlSuccesses 0,
+   :urlCrawlPattern "",
+   :roundStartTime 0,
+   :downloadUrls
+   "http://api.diffbot.com/v2/crawl/download/[tokenredacted]-crawlName_urls.csv",
+   :name "crawlName",
+   :onlyProcessIfNew 1,
+   :jobStatus {:status 0, :message "Job is initializing."},
+   :currentTime 1389637774,
+   :pageCrawlAttempts 0,
+   :sentJobDoneNotification 0,
+   :notifyWebhook "",
+   :maxToCrawl 100000,
+   :crawlDelay 0.25,
+   :type "crawl",
+   :notifyEmail "",
+   :restrictDomain 1,
+   :objectsFound 0,
+   :seeds "http://google.com",
+   :urlCrawlRegEx "",
+   :apiUrl "http://api.diffbot.com/v2/article",
+   :pageProcessSuccesses 0,
+   :roundsCompleted 0,
+   :repeat 0.0,
+   :maxToProcess 100000,
+   :urlProcessPattern
+ "",
+   :obeyRobots 1}]}
+```
+
+As with the analyze APIs, optional parameters can also be passed through. Please refer to the [Crawlbot API documentation](http://www.diffbot.com/dev/docs/crawl/) for a full list.
+
+The arguments should be passed in as keywork arguments, for example
+
+```clojure
+(make-crawl "crawlName"  "article" ["http://google.com"] token :url-crawl-pattern ["product" "!notthis"] :max-to-crawl 100)
+; resolves to http://api.diffbot.com/v2/crawl?token=[redacted]&apiUrl=http%3A%2F%2Fapi.diffbot.com%2Fv2%2Farticle&seeds=http%3A%2F%2Fgoogle.com&name=crawlName&urlCrawlPattern=product||!notthis&maxToCrawl=100
+```
+
+When passing through the extra parameters we need to differentiate between those destined for the Crawlbot API and those destinted for the API that the crawlbot is crawling.
+
+There is a special key `:analyze-opts` that will carry a map of configuration through to the analyze url
+
+```clojure
+(make-crawl "crawlName"  "article" ["http://google.com"] token :analyze-opts {:fields ["meta"] :callback "cb"}  :url-crawl-pattern ["product" "!notthis"] :max-to-crawl 100)
+; resolves to http://api.diffbot.com/v2/crawl?token=[redacted]&apiUrl=http%3A%2F%2Fapi.diffbot.com%2Fv2%2Farticle%26fields%3Dmeta%26callback%3Dcb&seeds=http%3A%2F%2Fgoogle.com&name=crawlName&urlCrawlPattern=product||!notthis&maxToCrawl=100
+```
+
+#### Job status and progress
+
+`get-crawl` will give you details of job progress. An optional job name will refine the response to just one job.
+
+```clojure
+(diffbot.crawlbot/get-crawl token) ;; all jobs
+(diffbot.crawlbot/get-crawl job-name token) ;; one job
+```
+
+The response from both calls is in this format,
+
+```clojure
+{:jobs
+ [{:maxRounds -1,
+   :pageProcessAttempts 135,
+   :downloadJson
+   "http://api.diffbot.com/v2/crawl/download/[tokenredacted]-crawlName_data.json",
+   :urlProcessRegEx "",
+   :pageProcessPattern "",
+   :urlsHarvested 6120,
+   :pageCrawlSuccesses 189,
+   :urlCrawlPattern "product||!notthis",
+   :roundStartTime 0,
+   :downloadUrls
+   "http://api.diffbot.com/v2/crawl/download/[tokenredacted]-crawlName_urls.csv",
+   :name "crawlName",
+   :onlyProcessIfNew 1,
+   :jobStatus
+   {:status 2, :message "Job has reached maxToCrawl limit."},
+   :currentTime 1389638848,
+   :pageCrawlAttempts 190,
+   :sentJobDoneNotification 1,
+   :notifyWebhook "",
+   :maxToCrawl 100,
+   :crawlDelay 0.25,
+   :type "crawl",
+   :notifyEmail "",
+   :restrictDomain 1,
+   :objectsFound 126,
+   :seeds "http://google.com",
+   :urlCrawlRegEx "",
+   :apiUrl "http://api.diffbot.com/v2/article&fields=meta&callback=cb",
+   :pageProcessSuccesses 126,
+   :roundsCompleted 0,
+   :repeat 0.0,
+   :maxToProcess 100000,
+
+   :urlProcessPattern "",
+   :obeyRobots 1}]}
+```
+
+#### Pause, resume, restart and delete
+
+Crawl jobs can be paused and resumed, as well as restarted from scratch and deleted. There are simple functions for these requests that all follow the same signature format of (fn-name job-name token).
+
+```clojure
+(pause crawl-name token)
+(resume crawl-name token)
+(restart crawl-name token)
+(delete crawl-name token)
+```
+
+#### Reading job data
+
+Crawlbot exposes crawl job data as json and a list of visited urls as csv. Again, these calls require a job name and a token.
+
+```clojure
+(get-crawl-data crawl-name token)
+(get-crawl-urls crawl-name token)
 ```
 
 ### clj-http
