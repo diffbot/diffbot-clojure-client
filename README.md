@@ -308,9 +308,4 @@ Alternatively, on exceptional cases the response body can be returned directly b
          :req {:throw-exceptions false})
 ```
 
-## License
-
-Copyright © 2014 Dan Midwood
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+-Initial commit by Dan Midwood-
