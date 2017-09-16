@@ -1,6 +1,6 @@
 # Clojure Diffbot API
 
-A Clojure library for working with the [Diffbot](http://www/diffbot.com) [API v2](http://www.diffbot.com/products/automatic/).
+A Clojure library for working with the [Diffbot](https://www.diffbot.com) [API v2](https://www.diffbot.com/products/automatic/).
 
 ## Installation
 
@@ -8,7 +8,7 @@ Add `[diffbot/diffbot "0.1.0"]` to your Leiningen project `:dependencies`.
 
 ## Usage
 
-All function calls require a Diffbot API token ([sign up](http://www.diffbot.com/pricing) to get one) and the url you want to parse. The Diffbot responses are parsed and returned as Clojure maps.
+All function calls require a Diffbot API token ([sign up](https://www.diffbot.com/pricing) to get one) and the url you want to parse. The Diffbot responses are parsed and returned as Clojure maps.
 
 ### Analyze
 
