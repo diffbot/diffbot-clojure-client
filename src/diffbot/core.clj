@@ -18,7 +18,7 @@
     url))
 
 (defn build-request-url [call-type token url & {:keys [api-url api-version fields timeout callback]}]
-  (-> (format "http://%s/%s/%s?token=%s&url=%s"
+  (-> (format "https://%s/%s/%s?token=%s&url=%s"
               (or api-url "api.diffbot.com")
               (or api-version "v2")
               call-type

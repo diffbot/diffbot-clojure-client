@@ -25,7 +25,7 @@
 
 (defn ^:private build-api-url [call-type {:keys [api-url api-version fields timeout callback]}]
   (when call-type
-    (-> (format "http://%s/%s/%s"
+    (-> (format "https://%s/%s/%s"
                 (or api-url "api.diffbot.com")
                 (or api-version "v2")
                 call-type)
@@ -57,7 +57,7 @@
     url))
 
 (defn ^:private build-crawl-url [call-type urls token & {:keys [api-url api-version analyze-opts] :as opts}]
-  (-> (format "http://%s/%s/crawl?token=%s"
+  (-> (format "https://%s/%s/crawl?token=%s"
               (or api-url "api.diffbot.com")
               (or api-version "v2")
               token)
@@ -90,7 +90,7 @@
   ([token] (get-crawl nil token)))
 
 (defn ^:private read-data [type name token]
-  (client/get (format "http://api.diffbot.com/v2/crawl/download/%s-%s_%s"
+  (client/get (format "https://api.diffbot.com/v2/crawl/download/%s-%s_%s"
                       token
                       name
                       type)))
